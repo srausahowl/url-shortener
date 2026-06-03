@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>URL Shortener</title><style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{max-width:600px;width:100%}h1{font-size:32px;text-align:center;margin-bottom:8px}.sub{text-align:center;color:#94a3b8;margin-bottom:32px}
+.input-wrap{display:flex;gap:8px;margin-bottom:20px}input[type=url]{flex:1;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 18px;color:#e2e8f0;font-size:16px;outline:none}input[type=url]:focus{border-color:#8b5cf6}
+.shorten-btn{background:#8b5cf6;color:#fff;border:none;border-radius:10px;padding:14px 28px;font-weight:700;cursor:pointer;font-size:16px}.shorten-btn:hover{background:#a78bfa}
+.result{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;display:none}.result.show{display:block}
+.result label{font-size:12px;color:#94a3b8;text-transform:uppercase;margin-bottom:8px;display:block}
+.result .short-url{display:flex;align-items:center;gap:12px;background:#0f172a;padding:12px;border-radius:8px;margin-bottom:12px}
+.result .short-url a{color:#8b5cf6;font-size:15px;font-family:monospace;text-decoration:none;word-break:break-all}
+.result .copy-btn{background:#334155;border:none;color:#e2e8f0;padding:8px 16px;border-radius:6px;cursor:pointer;flex-shrink:0}
+.info{display:flex;gap:16px;font-size:13px;color:#94a3b8}.info span{background:#334155;padding:4px 10px;border-radius:6px}
+.history{margin-top:32px}.history h3{font-size:16px;margin-bottom:12px;color:#94a3b8}
+.history-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px 16px;margin-bottom:8px;font-size:14px}
+.history-item a{color:#8b5cf6;text-decoration:none;font-family:monospace}.history-item .orig{color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.history-item .copy-btn{background:#334155;border:none;color:#e2e8f0;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+footer{text-align:center;margin-top:32px;color:#475569;font-size:13px}
+</style></head><body><div class="container"><h1>URL Shortener</h1><p class="sub">Shorten links client-side using base64 encoding, no server needed</p>
+<div class="input-wrap"><input type="url" id="input" placeholder="https://example.com/very/long/url" autofocus><button class="shorten-btn" onclick="shorten()">Shorten</button></div>
+<div class="result" id="result"><label>Shortened URL</label><div class="short-url"><a id="short-link" href="#" target="_blank"></a><button class="copy-btn" onclick="copy()">Copy</button></div><div class="info"><span id="orig-len">Original: 0</span><span id="short-len">Short: 0</span><span id="saved">Saved: 0%</span></div></div>
+<div class="history" id="hist"><h3>History</h3><div id="hist-list"></div></div>
+<footer>All processing happens in your browser, no data sent anywhere</footer></div>
+<script>
+let history=[];const BASE=location.href.split("#")[0]+"#/";
+function shorten(){const url=document.getElementById("input").value.trim();if(!url)return;try{new URL(url)}catch(e){alert("Invalid URL");return}
+const encoded=btoa(url).replace(/=/g,"").replace(/\+/g,"-").replace(/\//g,"_");const short=BASE+encoded;
+document.getElementById("short-link").href=short;document.getElementById("short-link").textContent=short;
+document.getElementById("orig-len").textContent="Original: "+url.length;document.getElementById("short-len").textContent="Short: "+encoded.length;
+document.getElementById("saved").textContent="Saved: "+Math.max(0,Math.round((1-encoded.length/url.length)*100))+"%";
+document.getElementById("result").classList.add("show");history.unshift({orig:url,short});if(history.length>10)history.pop();renderHistory()}
+function copy(){navigator.clipboard.writeText(document.getElementById("short-link").textContent)}
+function renderHistory(){let h="";history.forEach(r=>{h+='<div class="history-item"><span class="orig">'+r.orig+'</span><a href="'+r.short+'">open</a><button class="copy-btn" onclick="navigator.clipboard.writeText(\''+r.short+'\')">Copy</button></div>'});document.getElementById("hist-list").innerHTML=h}
+(function(){const hash=location.hash;if(hash&&hash.startsWith("#/")){try{const url=atob(hash.slice(2).replace(/-/g,"+").replace(/_/g,"/"));if(url&&url.startsWith("http"))location.replace(url)}catch(e){}}})();
+document.getElementById("input").addEventListener("keydown",e=>{if(e.key==="Enter")shorten()})
+</script></body></html>
